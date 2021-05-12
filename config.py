@@ -1,9 +1,0 @@
-pin_code = 211006
-date = "12-05-2021"
-source_mobile_number = "+17206054598"
-target_mobile_number = "+918285476674"
-target_email_address = ""
-TWILIO_ACCOUNT_SID = "AC9eb107c716b590231f16c8b87b79882e"
-TWILIO_AUTH_TOKEN = "b07fdfd7784431c197da9d14f58ffe60"
-interval = 2
-input_age_group = "18+"  # values can be 18+ plus and 45+
