@@ -14,6 +14,7 @@ import time
 import datetime
 import send_sms
 import pprint
+import multiprocessing_module
 
 #Generate Execution Date
 date = datetime.date.today().strftime("%d-%m-%Y")
@@ -63,17 +64,18 @@ def get_user_inputs(date):
             response_state = response_state.json()
             total_districts = len(response_state['districts'])
             print(f"Total Number of Vaccination center for State Code : {config.state_id} are {total_districts}")
+            district_id_list = []
             for i in range(total_districts) :
                 district_id = response_state['districts'][i]['district_id']
                 district_name = response_state['districts'][i]['district_name']
                 print(f"district ID : {district_id} : District Name : {district_name}")
 
-        district_id = input("Enter District ID to initiate a search : ")
+                district_id_list.append(district_id)
 
-        # Generate request url for district code
-        request_url_district = f"{constants.FIND_BY_DISTRICT_ENDPOINT}{district_id}&date={date}"
+        district_id_user = input("Enter District ID to initiate a search : ")
+
         pin_code = ""
-        return option,pin_code,request_url_district
+        return option,pin_code,district_id_user,district_id_list
 
 def get_info_for_pin_code(pin_code,date):
 
@@ -121,7 +123,6 @@ def get_info_for_pin_code(pin_code,date):
         print(f"Minimum age limit : {min_age_limit}")
         print(f"Date on which request has been made or checked : {date}")
         print(f"Available capacity : {available_capacity}")
-        print(f"************{type(min_age_limit)}")
 
         if min_age_limit == 18 :
             print(f"Shots available for 18 + range of age group : {available_capacity}")
@@ -162,61 +163,74 @@ def set_flags(available_capacity, min_age_limit):
     else:
         print("error fetching data")
 
+def fetch_data_district_id(district_id,child_conn) :
+    # Generate Execution Date
+    date = datetime.date.today().strftime("%d-%m-%Y")
+    # Generate request url for district code
+    request_url_district = f"{constants.FIND_BY_DISTRICT_ENDPOINT}{district_id}&date={date}"
+    # get response for district
+    response_district = requests.get(url=request_url_district, headers=constants.headers)
+    status_code = response_district.status_code
+    response_district = response_district.json()
+    response = dict(response_district)
+    sessions = response["sessions"]
+    avaiable_centers = len(sessions)
+
+    print(f"Number of available centers are : {avaiable_centers}")
+    # initialize a counter
+    counter = 0
+    for centers in sessions:
+        counter = counter + 1
+        center_id = centers["center_id"]
+        name = centers["name"]
+        address = centers["address"]
+        state_name = centers["state_name"]
+        district_name = centers["district_name"]
+        block_name = centers["block_name"]
+        pincode = centers["pincode"]
+        vaccine = centers["vaccine"]
+        fee_type = centers["fee_type"]
+        slots = centers["slots"]
+        min_age_limit = centers["min_age_limit"]
+        date = centers["date"]
+        available_capacity = centers["available_capacity"]
+
+        print(f"**********************************************Center number : {counter}")
+        print(f"The center ID is : {center_id}")
+        print(f"Name of Hospital : {name}")
+        print(f"The location of centre : {address} ")
+        print(f"The name of state : {state_name}")
+        print(f"The block name is : {block_name}")
+        print(f"The Pincode : {pincode}")
+        print(f"The available vaccine is : {vaccine}")
+        print(f"Fee Type  : {fee_type}")
+        print(f"Available slots : {slots}")
+        print(f"Minimum age limit : {min_age_limit}")
+        print(f"Date on which request has been made or checked : {date}")
+        print(f"Available capacity : {available_capacity}")
+        pin_code = ""
+
+        if min_age_limit == 18 and available_capacity > 0:
+            print(f"########################################## {center_id},{name},{address},{pincode}")
+            exit()
+            break
+        elif min_age_limit == 45 and available_capacity > 0:
+            print(f"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% {center_id},{name},{address},{pincode}")
+    print(f"***********************************************{min_age_limit}")
+    child_conn.close()
+
+
+
+
+
 
 # Driver Code
 if __name__ == '__main__':
-    option, pin_code, request_url_district = get_user_inputs(date)
+    option,pin_code,district_id_user,district_id_list = get_user_inputs(date)
     while True :
+        multiprocessing_module.multiprocessing_function(fetch_data_district_id, district_id_list)
+            # fetch_data_district_id(district_id, date)
 
-        # get response for district
-        response_district = requests.get(url=request_url_district, headers=constants.headers)
-        status_code = response_district.status_code
-        response_district = response_district.json()
-        response = dict(response_district)
-        sessions = response["sessions"]
-        avaiable_centers = len(sessions)
-
-        print(f"Number of available centers are : {avaiable_centers}")
-        # initialize a counter
-        counter = 0
-        for centers in sessions:
-            counter = counter + 1
-            center_id = centers["center_id"]
-            name = centers["name"]
-            address = centers["address"]
-            state_name = centers["state_name"]
-            district_name = centers["district_name"]
-            block_name = centers["block_name"]
-            pincode = centers["pincode"]
-            vaccine = centers["vaccine"]
-            fee_type = centers["fee_type"]
-            slots = centers["slots"]
-            min_age_limit = centers["min_age_limit"]
-            date = centers["date"]
-            available_capacity = centers["available_capacity"]
-
-            print(f"**********************************************Center number : {counter}")
-            print(f"The center ID is : {center_id}")
-            print(f"Name of Hospital : {name}")
-            print(f"The location of centre : {address} ")
-            print(f"The name of state : {state_name}")
-            print(f"The block name is : {block_name}")
-            print(f"The Pincode : {pincode}")
-            print(f"The available vaccine is : {vaccine}")
-            print(f"Fee Type  : {fee_type}")
-            print(f"Available slots : {slots}")
-            print(f"Minimum age limit : {min_age_limit}")
-            print(f"Date on which request has been made or checked : {date}")
-            print(f"Available capacity : {available_capacity}")
-            pin_code = ""
-
-            if min_age_limit == 18 and available_capacity > 0:
-                print(f"########################################## {center_id},{name},{address},{pincode}")
-                exit()
-                break
-            elif min_age_limit == 45 and available_capacity > 0:
-                print(f"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% {center_id},{name},{address},{pincode}")
-        print(f"***********************************************{min_age_limit}")
 
 
 
