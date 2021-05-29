@@ -231,7 +231,7 @@ if __name__ == '__main__':
                     send_sms.send(age_group, pin_code, address)
 
                     sys.exit("Found vaccination slot for 18")
-                    break
+     
                 elif min_age_limit == 45 and available_capacity > 0:
                     print(f"$$$$$$$$$$$$$ CENTRE FOUND FOR AGE LIMIT 45 + {center_id},{name},{address},{pincode}")
                     time.sleep(5)
