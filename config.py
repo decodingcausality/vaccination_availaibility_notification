@@ -1,8 +1,10 @@
-"""
-Confgurables
-"""
+state_id = 5
+pin_code = 211001
+district_id = 581
+# date = "14-05-2021"
 source_mobile_number = ""
 target_mobile_number = ""
+target_email_address = ""
 TWILIO_ACCOUNT_SID = ""
 TWILIO_AUTH_TOKEN = ""
 interval = 5
