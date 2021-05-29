@@ -6,10 +6,10 @@ Input   :
 from twilio.rest import Client
 import config
 
-def send(age_group, pin_code) :
+def send(age_group, pin_code,address) :
 
 
-    body = f"Available vaccine for age group : {age_group} , PIN CODE : {pin_code}"
+    body = f"Available vaccine for age group : {age_group} , PIN CODE : {pin_code} at {address}"
 
     account_sid = config.TWILIO_ACCOUNT_SID
     auth_token = config.TWILIO_AUTH_TOKEN
